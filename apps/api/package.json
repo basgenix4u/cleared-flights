@@ -4,14 +4,19 @@
   "private": true,
   "description": "Cleared platform API — auth, content, media and admin services (Render).",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "seed": "tsx src/scripts/seed.ts",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
@@ -23,8 +28,10 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^3.2.7",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
   }
 }

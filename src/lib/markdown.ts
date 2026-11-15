@@ -10,7 +10,15 @@
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
+/**
+ * The inline pass escapes the source first, so a URL arrives here with entities in it.
+ * `&amp;` in a query string is a different URL from `&`, so decode before validating and
+ * let `esc()` re-encode exactly once — otherwise `?a=1&b=2` becomes `?a=1&amp;b=2`.
+ */
+const unesc = (s: string) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
 const safeUrl = (raw: string): string | null => {
+  raw = unesc(raw);
   const url = raw.trim();
   if (/^https?:\/\/[^\s]+$/i.test(url)) return url;
   if (/^\/[^\s]*$/.test(url)) return url;

@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  web:
+    name: web · typecheck · lint · unit · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+
+      - name: Unit tests
+        run: npm run test:coverage
+
+      - name: Build
+        # The build reads the environment while collecting page data, so the keys must
+        # exist. These are throwaway values: nothing here reaches a database or a provider.
+        env:
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+          SESSION_SECRET: ci-session-secret-not-used-anywhere
+          DATA_ENCRYPTION_KEY: ci-data-key-not-used-anywhere-32b
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          PLATFORM_API_URL: http://127.0.0.1:8080
+          ALLOW_SYNTHETIC_INVENTORY: "1"
+        run: npm run build
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-coverage
+          path: coverage/coverage-summary.json
+          if-no-files-found: ignore
+
+  api:
+    name: api · typecheck · unit · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  security:
+    name: security · audit · secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Production dependency audit
+        run: |
+          npm audit --omit=dev --audit-level=high
+          (cd apps/api && npm audit --omit=dev --audit-level=high)
+
+      - name: Scan history for secrets
+        # Pinned binary rather than a third-party action, so the scan cannot change
+        # under us and needs no external account.
+        run: |
+          GITLEAKS_VERSION=8.21.2
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --redact --verbose --no-banner
+
+  gate:
+    name: gate
+    # A single required status check for branch protection. Add new jobs to `needs`.
+    if: always()
+    needs: [web, api, security]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any upstream job failed
+        run: |
+          echo "web=${{ needs.web.result }} api=${{ needs.api.result }} security=${{ needs.security.result }}"
+          if [ "${{ needs.web.result }}" != "success" ] || [ "${{ needs.api.result }}" != "success" ] || [ "${{ needs.security.result }}" != "success" ]; then
+            echo "One or more checks failed."
+            exit 1
+          fi
+          echo "All checks passed."
