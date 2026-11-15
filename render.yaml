@@ -1,0 +1,42 @@
+# Render blueprint for the platform API.
+# The web app deploys to Vercel; this file describes the backend only.
+#
+#   Dashboard → New → Blueprint → point at this repository.
+#
+# Secrets are marked sync:false: set them in the Render dashboard, never in git.
+services:
+  - type: web
+    name: cleared-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: apps/api
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      # Neon: use the POOLED connection string here (host contains -pooler).
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true
+      # The Vercel production domain, e.g. https://cleared.com
+      - key: WEB_ORIGIN
+        sync: false
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: PGPOOL_MAX
+        value: "8"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: cleared

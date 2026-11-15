@@ -1,0 +1,618 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Newsreader Variable", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-paper: #f3f0e8;
+  --color-paper-2: #e9e5d9;
+  --color-card: #fbfaf6;
+  --color-ink: #101214;
+  --color-ink-2: #3a3d42;
+  --color-ink-3: #5f636a;
+  --color-line: #d8d3c4;
+  --color-line-2: #bdb7a5;
+  --color-signal: #ffcb05;
+  --color-signal-soft: #fff0b0;
+  --color-go: #1f7a4c;
+  --color-go-bg: #e1f0e7;
+  --color-stop: #b3261e;
+  --color-stop-bg: #fae4e1;
+  --color-warn: #7a5200;
+  --color-warn-bg: #fff1c2;
+  --color-info: #1b3a8c;
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --shadow-pop: 0 1px 0 rgb(16 18 20 / 0.04), 0 18px 40px -16px rgb(16 18 20 / 0.32);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --z-nav: 40;
+  --z-popover: 50;
+  --z-modal: 60;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-signal);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--color-signal);
+  border-radius: var(--radius-xs);
+}
+.on-dark :focus-visible {
+  outline-color: var(--color-signal);
+  box-shadow: none;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  box-shadow: none;
+}
+
+@layer components {
+/* ---- Typographic utilities ---- */
+.code {
+  font-family: var(--font-sans);
+  font-stretch: 70%;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  line-height: 1;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+.serif {
+  font-family: var(--font-serif);
+}
+
+/* ---- Signage ---- */
+.hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-signal) 0 7px,
+    var(--color-ink) 7px 14px
+  );
+}
+.plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-signal);
+  color: var(--color-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1.5px var(--color-ink);
+  padding: 0 0.45em;
+}
+.plate-dark {
+  background: var(--color-ink);
+  color: var(--color-signal);
+  box-shadow: inset 0 0 0 1.5px var(--color-signal);
+}
+.hairline {
+  border-color: var(--color-line);
+}
+.leader {
+  flex: 1;
+  border-bottom: 1px dotted var(--color-line-2);
+  transform: translateY(-4px);
+  min-width: 12px;
+}
+
+/* ---- Form primitives ---- */
+.input {
+  width: 100%;
+  background: var(--color-card);
+  border: 1px solid var(--color-line-2);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: 44px;
+  font: inherit;
+  color: var(--color-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input::placeholder {
+  color: #7d7f84;
+}
+.input:hover {
+  border-color: var(--color-ink-3);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 3px var(--color-signal);
+}
+.input[aria-invalid="true"] {
+  border-color: var(--color-stop);
+  background: #fffafa;
+}
+.input:disabled {
+  background: var(--color-paper-2);
+  color: var(--color-ink-3);
+  cursor: not-allowed;
+}
+
+}
+
+/* ---- Dialog / drawer ---- */
+dialog.sheet {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  max-width: 100vw;
+  max-height: 100dvh;
+  box-shadow: var(--shadow-pop);
+}
+dialog.sheet::backdrop {
+  background: rgb(16 18 20 / 0.5);
+  animation: fade-in 0.2s ease-out;
+}
+dialog.sheet[open].from-right {
+  position: fixed;
+  inset: 0 0 0 auto;
+  height: 100dvh;
+  width: min(880px, 100vw);
+  animation: slide-left 0.32s var(--ease-out-expo);
+}
+dialog.sheet[open].from-bottom {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100vw;
+  border-radius: 14px 14px 0 0;
+  animation: slide-up 0.32s var(--ease-out-expo);
+}
+
+/* ---- Accordion (height animation without JS measuring) ---- */
+.fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s var(--ease-out-expo);
+}
+.fold[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.fold > div {
+  overflow: hidden;
+}
+
+/* ---- Motion ---- */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-left {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.rise { animation: rise 0.45s var(--ease-out-expo) both; }
+.pop { animation: pop 0.16s ease-out both; }
+.skeleton {
+  background: linear-gradient(90deg, var(--color-paper-2) 25%, #f6f3ec 50%, var(--color-paper-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: var(--radius-sm);
+}
+
+.nudge > .arrow {
+  transition: transform 0.25s var(--ease-out-expo);
+}
+.nudge:hover > .arrow,
+a:hover .nudge > .arrow,
+.group:hover .nudge > .arrow {
+  transform: translateX(4px);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+input[type="range"] {
+  accent-color: var(--color-ink);
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
+
+/* Responsive sheet: bottom sheet on phones, side drawer from md */
+dialog.sheet[open].responsive {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100vw;
+  max-height: 90dvh;
+  border-radius: 14px 14px 0 0;
+  animation: slide-up 0.32s var(--ease-out-expo);
+}
+@media (min-width: 768px) {
+  dialog.sheet[open].responsive {
+    inset: 0 0 0 auto;
+    height: 100dvh;
+    max-height: 100dvh;
+    width: min(460px, 100vw);
+    border-radius: 0;
+    animation: slide-left 0.32s var(--ease-out-expo);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Production finish
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Headings balance rather than leaving an orphan word; body copy avoids rivers.
+   Inside @layer base on purpose: Tailwind v4 emits utilities in a cascade layer, and an
+   unlayered element rule beats *every* layered utility regardless of specificity. Left
+   unlayered, `text-wrap: pretty` silently defeated `whitespace-nowrap` and `truncate`
+   everywhere — in modern CSS `white-space` is a shorthand for `text-wrap-mode`, so the two
+   were fighting and the element rule won. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* Long identifiers (references, PNRs, ticket numbers) must never break a layout. */
+.mono,
+.font-mono {
+  overflow-wrap: anywhere;
+}
+
+/* A printed itinerary is a real deliverable: customers take it to the airport. */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11.5pt;
+  }
+  .no-print,
+  header,
+  footer,
+  nav,
+  button,
+  [role="tablist"] {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .rise {
+    animation: none !important;
+  }
+  section,
+  article {
+    break-inside: avoid;
+    border-color: #999 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #444;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Editorial prose (journal articles and the admin preview)
+   Scoped to .prose so it can never leak into product UI.
+   ───────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .prose {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.68;
+    color: var(--color-ink-2);
+  }
+  .prose > * + * {
+    margin-top: 1.15em;
+  }
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-top: 1.9em;
+    margin-bottom: 0.5em;
+    font-weight: 700;
+  }
+  .prose h2 {
+    font-size: 1.5rem;
+  }
+  .prose h3 {
+    font-size: 1.2rem;
+  }
+  .prose h4 {
+    font-size: 1.02rem;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    font-size: 0.76rem;
+    color: var(--color-ink-3);
+  }
+  .prose strong {
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+  .prose a {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-line-2);
+  }
+  .prose a:hover {
+    text-decoration-color: var(--color-ink);
+    background: var(--color-signal-soft);
+  }
+  .prose ul,
+  .prose ol {
+    padding-left: 1.25em;
+    font-family: var(--font-sans);
+    font-size: 0.94em;
+    line-height: 1.6;
+  }
+  .prose ul {
+    list-style: none;
+  }
+  .prose ul > li {
+    position: relative;
+  }
+  .prose ul > li::before {
+    content: "";
+    position: absolute;
+    left: -1em;
+    top: 0.62em;
+    width: 6px;
+    height: 6px;
+    background: var(--color-ink);
+  }
+  .prose ol {
+    list-style: decimal;
+  }
+  .prose ol > li::marker {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--color-ink-3);
+  }
+  .prose li + li {
+    margin-top: 0.4em;
+  }
+  .prose blockquote {
+    border-left: 3px solid var(--color-signal);
+    padding: 0.15em 0 0.15em 1em;
+    font-style: italic;
+    color: var(--color-ink);
+  }
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-line);
+    border-radius: 2px;
+    padding: 0.1em 0.35em;
+  }
+  .prose pre {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border-radius: var(--radius-sm);
+    padding: 1em 1.15em;
+    overflow-x: auto;
+    font-size: 0.82em;
+    line-height: 1.55;
+  }
+  .prose pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font-size: 1em;
+  }
+  .prose img {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-line);
+  }
+  .prose hr {
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    margin: 2.2em 0;
+  }
+  .prose > p:first-of-type::first-letter {
+    font-size: 3.1em;
+    float: left;
+    line-height: 0.86;
+    padding: 0.06em 0.09em 0 0;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+}
+
+/* The admin editor preview should not drop-cap a half-written paragraph. */
+.prose.admin-preview > p:first-of-type::first-letter {
+  font-size: inherit;
+  float: none;
+  padding: 0;
+  font-weight: inherit;
+}
+
+/* ------------------------------------------------------------------ mobile ---
+   The phone is the default device for this product, not a degraded desktop.
+   Rules here are deliberately small and global; component-level mobile layout lives
+   next to each component. */
+:root {
+  /* iOS safe areas, with 0 fallback so padding maths is the same everywhere. */
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --tabbar-h: 58px;
+  --tabbar-total: calc(var(--tabbar-h) + var(--safe-b));
+}
+
+html {
+  /* A stray wide element must never let the page pan sideways on a phone. */
+  overflow-x: clip;
+  scroll-padding-top: 72px;
+}
+
+body {
+  overflow-x: clip;
+}
+
+/* Taps should feel like taps. 44px is the floor, not the target. */
+@media (max-width: 1023px) {
+  a,
+  button,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    touch-action: manipulation;
+  }
+  input,
+  select,
+  textarea {
+    /* iOS zooms the page when a field is focused below 16px. */
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Display type is set for a poster on desktop; on a phone it has to stop shouting.
+   Only h1 is capped globally — everything else is handled per component. */
+@media (max-width: 640px) {
+  :where(h1) {
+    font-size: clamp(25px, 7.6vw, 36px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.028em !important;
+  }
+  :where(h2) {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Bottom bars: content inside them must clear the home indicator. */
+.safe-bottom {
+  padding-bottom: max(12px, var(--safe-b));
+}
+
+/* Space reserved under the page for the mobile tab bar. Applied by presence, not by class,
+   so the desk (which renders no tab bar) keeps its full height. */
+.pb-tabbar {
+  padding-bottom: calc(var(--tabbar-total) + 16px);
+}
+@media (max-width: 1023.98px) {
+  body:has(.site-tabbar) #main {
+    padding-bottom: var(--tabbar-total);
+  }
+}
+
+/* Horizontal snap rails (date strip, admin nav) share one behaviour.
+   In @layer components so a `sm:grid` / `lg:overflow-visible` utility can still win —
+   an unlayered rule here would beat every Tailwind utility on the same element. */
+@layer components {
+  .rail {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  .rail > * {
+    scroll-snap-align: start;
+  }
+}
+
+/* Fade the rail edge so a clipped third card reads as "more", not as broken. */
+/* Same layering rule as .rail: a utility such as `lg:[mask-image:none]` has to be able to
+   switch the fade off when the rail becomes a grid or a sidebar. */
+@layer components {
+  .rail-fade {
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  }
+  .rail-fade:dir(rtl) {
+    mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent 100%);
+  }
+}

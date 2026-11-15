@@ -1,0 +1,40 @@
+# --- dependencies -----------------------------------------------------------
+node_modules/
+.pnp
+.pnp.js
+
+# --- builds -----------------------------------------------------------------
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- tests & coverage -------------------------------------------------------
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+
+# --- env & secrets ----------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- documentation ----------------------------------------------------------
+# Owner instruction: documentation, task boards and reports stay in the workspace
+# and are never published in this repository.
+*.md
+docs/
+
+# --- tooling & OS -----------------------------------------------------------
+.vercel
+.turbo
+.eslintcache
+.DS_Store
+*.log
+npm-debug.log*
